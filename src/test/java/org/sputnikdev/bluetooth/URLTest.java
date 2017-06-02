@@ -228,4 +228,90 @@ public class URLTest {
         assertTrue(new URL(raw).equals(new URL(raw)));
     }
 
+    @Test
+    public void testCompareToHappyCase() {
+        URL url1 = new URL("2", "2", "2", "2", "2");
+        URL url2 = new URL("2", "2", "2", "2", "2");
+        assertEquals(0, url1.compareTo(url2));
+        assertEquals(0, url2.compareTo(url1));
+
+        // adapter
+        url2 = new URL("3", "2", "2", "2", "2");
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+        url2 = new URL("1", "2", "2", "2", "2");
+        assertEquals(1, url1.compareTo(url2));
+        assertEquals(-1, url2.compareTo(url1));
+
+        // device
+        url2 = new URL("2", "3", "2", "2", "2");
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+        url2 = new URL("2", "1", "2", "2", "2");
+        assertEquals(1, url1.compareTo(url2));
+        assertEquals(-1, url2.compareTo(url1));
+
+        // service
+        url2 = new URL("2", "2", "3", "2", "2");
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+        url2 = new URL("2", "2", "1", "2", "2");
+        assertEquals(1, url1.compareTo(url2));
+        assertEquals(-1, url2.compareTo(url1));
+
+        // characteristic
+        url2 = new URL("2", "2", "2", "3", "2");
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+        url2 = new URL("2", "2", "2", "1", "2");
+        assertEquals(1, url1.compareTo(url2));
+        assertEquals(-1, url2.compareTo(url1));
+
+        // field
+        url2 = new URL("2", "2", "2", "2", "3");
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+        url2 = new URL("2", "2", "2", "2", "1");
+        assertEquals(1, url1.compareTo(url2));
+        assertEquals(-1, url2.compareTo(url1));
+    }
+
+    @Test
+    public void testCompareToNulls() {
+        URL url1 = URL.ROOT;
+        URL url2 = URL.ROOT;
+        assertEquals(0, url1.compareTo(url2));
+
+        // adapter
+        url2 = new URL("1", null, null, null, null);
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+
+        // device
+        url2 = new URL("1", "1", null, null, null);
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+
+        // service
+        url2 = new URL("1", "1", "1", null, null);
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+
+        // characteristic
+        url2 = new URL("1", "1", "1", "1", null);
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+
+        // field
+        url2 = new URL("1", "1", "1", "1", "1");
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+
+        // field
+        url1 = new URL("1", "1", null, null, null);
+        url2 = new URL("1", "1", "1", "1", "1");
+        assertEquals(-1, url1.compareTo(url2));
+        assertEquals(1, url2.compareTo(url1));
+    }
+
 }

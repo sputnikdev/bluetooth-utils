@@ -40,10 +40,12 @@ import java.util.regex.Pattern;
  *
  * @author Vlad Kolotov
  */
-public class URL {
+public class URL implements Comparable<URL> {
 
     public static final Pattern URL_PATTERN =
             Pattern.compile("^/(?<adapter>(\\w\\w:){5}\\w\\w)?(/(?<device>(\\w\\w:){5}\\w\\w))?(/(?<service>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))?(/(?<characteristic>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))?(/(?<field>\\w+))?$");
+
+    public static final URL ROOT = new URL("/");
 
     private final String adapterAddress;
     private final String deviceAddress;
@@ -421,12 +423,45 @@ public class URL {
         return result;
     }
 
+    @Override
+    public int compareTo(URL o) {
+        int result = compareFields(adapterAddress, o.adapterAddress);
+        if (result != 0) {
+            return result;
+        }
+        result = compareFields(deviceAddress, o.deviceAddress);
+        if (result != 0) {
+            return result;
+        }
+        result = compareFields(serviceUUID, o.serviceUUID);
+        if (result != 0) {
+            return result;
+        }
+        result = compareFields(characteristicUUID, o.characteristicUUID);
+        if (result != 0) {
+            return result;
+        }
+        return compareFields(fieldName, o.fieldName);
+    }
+
     private void validate() {
         if (fieldName != null && characteristicUUID == null ||
                 characteristicUUID != null && serviceUUID == null ||
                 serviceUUID != null && deviceAddress == null ||
                 deviceAddress != null && adapterAddress == null) {
             throw new IllegalArgumentException("Invalid url: " + toString());
+        }
+    }
+
+    private int compareFields(String field1, String field2) {
+        if (field1 == null && field2 == null) {
+            return 0;
+        } else if (field2 == null) {
+            return 1;
+        } else if (field1 == null) {
+            return -1;
+        } else {
+            return field1.compareTo(field2);
         }
     }
 }
