@@ -38,6 +38,10 @@ import java.util.regex.Pattern;
  * /B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb
  * Similarly, it is easy to define a URL for other components, e.g. adapters, devices and characteristics.
  *
+ * If there are more than one protocol used to access Bluetooth devices (e.g. DBus, serial interface etc),
+ * then it is possible to define protocol as well:
+ * tinyb://B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level
+ *
  * @author Vlad Kolotov
  */
 public class URL implements Comparable<URL> {
