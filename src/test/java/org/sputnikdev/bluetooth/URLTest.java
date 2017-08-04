@@ -34,6 +34,7 @@ public class URLTest {
         URL url = new URL("/");
         assertEquals(new URL(), url);
 
+        assertNull(url.getProtocol());
         assertNull(url.getAdapterAddress());
         assertNull(url.getDeviceAddress());
         assertNull(url.getServiceUUID());
@@ -43,8 +44,9 @@ public class URLTest {
 
     @Test
     public void testFullURL() {
-        URL url = new URL("/54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
+        URL url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
 
+        assertEquals("tinyb", url.getProtocol());
         assertEquals("54:60:09:95:86:01", url.getAdapterAddress());
         assertEquals("11:22:33:44:55:66", url.getDeviceAddress());
         assertEquals("0000180f-0000-1000-8000-00805f9b34fb", url.getServiceUUID());
@@ -54,7 +56,8 @@ public class URLTest {
 
     @Test
     public void testShortUUIDs() {
-        URL url = new URL("/54:60:09:95:86:01/11:22:33:44:55:66/0000180f/00002a19/Level");
+        URL url = new URL("dbus://54:60:09:95:86:01/11:22:33:44:55:66/0000180f/00002a19/Level");
+        assertEquals("dbus", url.getProtocol());
         assertEquals("54:60:09:95:86:01", url.getAdapterAddress());
         assertEquals("11:22:33:44:55:66", url.getDeviceAddress());
         assertEquals("0000180f", url.getServiceUUID());
@@ -118,7 +121,8 @@ public class URLTest {
         assertNull(url.getCharacteristicUUID());
         assertNull(url.getFieldName());
 
-        url = new URL("/11:22:33:44:55:66");
+        url = new URL("bluegiga://11:22:33:44:55:66");
+        assertEquals("bluegiga", url.getProtocol());
         assertNull(url.getDeviceAddress());
         assertEquals("11:22:33:44:55:66", url.getAdapterAddress());
         assertNull(url.getServiceUUID());
@@ -149,7 +153,11 @@ public class URLTest {
     @Test
     public void testToString() {
 
-        URL url = new URL("/54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
+        URL url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
+        assertEquals("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level",
+                url.toString());
+
+        url = new URL("/54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
         assertEquals("/54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level",
                 url.toString());
 
@@ -224,14 +232,19 @@ public class URLTest {
 
     @Test
     public void testEquals() {
-        String raw = "/00:1A:7D:DA:71:04/CF:FC:9E:B2:0E:63/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb";
+        String raw = "tinyb://00:1A:7D:DA:71:04/CF:FC:9E:B2:0E:63/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb";
         assertTrue(new URL(raw).equals(new URL(raw)));
     }
 
     @Test
     public void testCompareToHappyCase() {
-        URL url1 = new URL("2", "2", "2", "2", "2");
-        URL url2 = new URL("2", "2", "2", "2", "2");
+        URL url1 = new URL("2", "2", "2", "2", "2", "2");
+        URL url2 = new URL("2", "2", "2", "2", "2", "2");
+        assertEquals(0, url1.compareTo(url2));
+        assertEquals(0, url2.compareTo(url1));
+
+        url1 = new URL("2", "2", "2", "2", "2");
+        url2 = new URL("2", "2", "2", "2", "2");
         assertEquals(0, url1.compareTo(url2));
         assertEquals(0, url2.compareTo(url1));
 

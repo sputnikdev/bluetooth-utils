@@ -43,10 +43,11 @@ import java.util.regex.Pattern;
 public class URL implements Comparable<URL> {
 
     public static final Pattern URL_PATTERN =
-            Pattern.compile("^/(?<adapter>(\\w\\w:){5}\\w\\w)?(/(?<device>(\\w\\w:){5}\\w\\w))?(/(?<service>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))?(/(?<characteristic>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))?(/(?<field>\\w+))?$");
+            Pattern.compile("^((?<protocol>\\w*):/)?/(?<adapter>(\\w\\w:){5}\\w\\w)?(/(?<device>(\\w\\w:){5}\\w\\w))?(/(?<service>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))?(/(?<characteristic>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))?(/(?<field>\\w+))?$");
 
     public static final URL ROOT = new URL("/");
 
+    private final String protocol;
     private final String adapterAddress;
     private final String deviceAddress;
     private final String serviceUUID;
@@ -87,17 +88,12 @@ public class URL implements Comparable<URL> {
     public URL(String url) {
         Matcher matcher = URL_PATTERN.matcher(url);
         if (matcher.find()) {
-            String adapterAddress = matcher.group("adapter");
-            String deviceAddress = matcher.group("device");
-            String serviceUUID = matcher.group("service");
-            String characteristicUUID = matcher.group("characteristic");
+            this.protocol = matcher.group("protocol");
+            this.adapterAddress = matcher.group("adapter");
+            this.deviceAddress = matcher.group("device");
+            this.serviceUUID = matcher.group("service");
+            this.characteristicUUID = matcher.group("characteristic");
             this.fieldName = matcher.group("field");
-
-            this.adapterAddress = adapterAddress;
-            this.deviceAddress = deviceAddress;
-            this.serviceUUID = serviceUUID;
-            this.characteristicUUID = characteristicUUID;
-
             validate();
         } else {
             throw new IllegalArgumentException("Invalid URL: " + url);
@@ -152,6 +148,21 @@ public class URL implements Comparable<URL> {
      */
     public URL(String adapterAddress, String deviceAddress, String serviceUUID, String characteristicUUID,
             String fieldName) {
+        this(null, adapterAddress, deviceAddress, serviceUUID, characteristicUUID, fieldName);
+    }
+
+    /**
+     * Constructs a URL pointing to a GATT field.
+     * @param protocol protocol name
+     * @param adapterAddress bluetooth adapter MAC address
+     * @param deviceAddress bluetooth device MAC address
+     * @param serviceUUID UUID of a GATT service
+     * @param characteristicUUID UUID of a GATT characteristic
+     * @param fieldName name of a field of the characteristic
+     */
+    public URL(String protocol, String adapterAddress, String deviceAddress, String serviceUUID,
+            String characteristicUUID, String fieldName) {
+        this.protocol = protocol;
         this.adapterAddress = adapterAddress;
         this.deviceAddress = deviceAddress;
         this.serviceUUID = serviceUUID;
@@ -191,6 +202,16 @@ public class URL implements Comparable<URL> {
     }
 
     /**
+     * Makes a copy of a given URL with some additional components.
+     * @param protocol protocol name
+     * @return a copy of a given URL with some additional components
+     */
+    public URL copyWithProtocol(String protocol) {
+        return new URL(protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID,
+                this.characteristicUUID, fieldName);
+    }
+
+    /**
      * Returns a copy of a given URL truncated to its device component.
      * Service, characteristic and field components will be null.
      * @return a copy of a given URL truncated to the device component
@@ -224,6 +245,14 @@ public class URL implements Comparable<URL> {
      */
     public URL getAdapterURL() {
         return new URL(adapterAddress, null);
+    }
+
+    /**
+     * Returns bluetooth protocol.
+     * @return bluetooth protocol
+     */
+    public String getProtocol() {
+        return protocol;
     }
 
     /**
@@ -381,7 +410,7 @@ public class URL implements Comparable<URL> {
             fields.removeLast();
         }
 
-        return "/" + String.join("/", fields);
+        return (protocol != null ? protocol + ":/" : "") + "/" + String.join("/", fields);
     }
 
     @Override
@@ -395,6 +424,9 @@ public class URL implements Comparable<URL> {
 
         URL url = (URL) o;
 
+        if (protocol != null ? !protocol.equals(url.protocol) : url.protocol != null) {
+            return false;
+        }
         if (adapterAddress != null ? !adapterAddress.equals(url.adapterAddress) : url.adapterAddress != null) {
             return false;
         }
@@ -415,7 +447,8 @@ public class URL implements Comparable<URL> {
 
     @Override
     public int hashCode() {
-        int result = adapterAddress != null ? adapterAddress.hashCode() : 0;
+        int result = protocol != null ? protocol.hashCode() : 0;
+        result = 31 * result + (adapterAddress != null ? adapterAddress.hashCode() : 0);
         result = 31 * result + (deviceAddress != null ? deviceAddress.hashCode() : 0);
         result = 31 * result + (serviceUUID != null ? serviceUUID.hashCode() : 0);
         result = 31 * result + (characteristicUUID != null ? characteristicUUID.hashCode() : 0);
