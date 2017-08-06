@@ -30,9 +30,75 @@ import static org.junit.Assert.assertTrue;
 public class URLTest {
 
     @Test
+    public void testConstructors() {
+        URL url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
+        assertEquals(url, new URL("tinyb", "54:60:09:95:86:01", "11:22:33:44:55:66",
+                "0000180f-0000-1000-8000-00805f9b34fb", "00002a19-0000-1000-8000-00805f9b34fb", "Level"));
+
+        assertEquals("tinyb", new URL("tinyb://").getProtocol());
+
+        url = new URL("/54:60:09:95:86:01/11:22:33:44:55:66");
+        assertEquals(url, new URL("54:60:09:95:86:01", "11:22:33:44:55:66"));
+
+        url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66");
+        assertEquals(url, new URL("tinyb", "54:60:09:95:86:01", "11:22:33:44:55:66"));
+
+        url = new URL("/54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb");
+        assertEquals(url, new URL("54:60:09:95:86:01", "11:22:33:44:55:66", "0000180f-0000-1000-8000-00805f9b34fb",
+                "00002a19-0000-1000-8000-00805f9b34fb"));
+
+        url = new URL("/54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
+        assertEquals(url, new URL("54:60:09:95:86:01", "11:22:33:44:55:66", "0000180f-0000-1000-8000-00805f9b34fb",
+                "00002a19-0000-1000-8000-00805f9b34fb", "Level"));
+    }
+
+    @Test
+    public void testCopyWith() {
+        URL url = new URL();
+        assertEquals(new URL("/"), url);
+        url = url.copyWithProtocol("tinyb");
+        assertEquals(new URL("tinyb://"), url);
+        url = url.copyWithAdapter("54:60:09:95:86:01");
+        assertEquals(new URL("tinyb://54:60:09:95:86:01"), url);
+        url = url.copyWithDevice("11:22:33:44:55:66");
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66"), url);
+        url = url.copyWith("0000180f-0000-1000-8000-00805f9b34fb", "00002a19-0000-1000-8000-00805f9b34fb");
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb"), url);
+        url = url.copyWith("0000180f-0000-1000-8000-00805f9b34fb", "00002a19-0000-1000-8000-00805f9b34fb", "Level");
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level"), url);
+        url = url.copyWithField("Power");
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Power"), url);
+
+    }
+
+    @Test
+    public void testGetURL() {
+        URL url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
+        assertEquals(new URL("tinyb://"), url.getProtocolURL());
+        assertEquals(new URL("tinyb://54:60:09:95:86:01"), url.getAdapterURL());
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66"), url.getDeviceURL());
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb"), url.getServiceURL());
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb"),
+                url.getCharacteristicURL());
+    }
+
+    @Test
+    public void testProtocol() {
+        URL url = new URL("tinyb://");
+        assertEquals(new URL("tinyb://"), url);
+
+        assertNull(url.getAdapterAddress());
+        assertNull(url.getDeviceAddress());
+        assertNull(url.getServiceUUID());
+        assertNull(url.getCharacteristicUUID());
+        assertNull(url.getFieldName());
+    }
+
+    @Test
     public void testRoot() {
         URL url = new URL("/");
         assertEquals(new URL(), url);
+        assertTrue(url.isRoot());
 
         assertNull(url.getProtocol());
         assertNull(url.getAdapterAddress());
@@ -70,6 +136,88 @@ public class URLTest {
         assertEquals("180f", url.getServiceUUID());
         assertEquals("2a19", url.getCharacteristicUUID());
         assertEquals("Level", url.getFieldName());
+    }
+
+    @Test
+    public void testIsMethods() {
+        URL url = new URL();
+        assertTrue(url.isRoot());
+        assertFalse(url.isProtocol());
+        url = new URL("/");
+        assertTrue(url.isRoot());
+        assertFalse(url.isProtocol());
+        url = new URL("tinyb://");
+        assertTrue(url.isRoot());
+        assertTrue(url.isProtocol());
+
+        assertFalse(url.isAdapter());
+        assertFalse(url.isDevice());
+        assertFalse(url.isService());
+        assertFalse(url.isCharacteristic());
+        assertFalse(url.isField());
+
+        url = new URL("tinyb://54:60:09:95:86:01");
+        assertFalse(url.isRoot());
+        assertFalse(url.isProtocol());
+        assertTrue(url.isAdapter());
+        assertFalse(url.isDevice());
+        assertFalse(url.isService());
+        assertFalse(url.isCharacteristic());
+        assertFalse(url.isField());
+
+        url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66");
+        assertFalse(url.isRoot());
+        assertFalse(url.isProtocol());
+        assertFalse(url.isAdapter());
+        assertTrue(url.isDevice());
+        assertFalse(url.isService());
+        assertFalse(url.isCharacteristic());
+        assertFalse(url.isField());
+
+        url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/180f");
+        assertFalse(url.isRoot());
+        assertFalse(url.isProtocol());
+        assertFalse(url.isAdapter());
+        assertFalse(url.isDevice());
+        assertTrue(url.isService());
+        assertFalse(url.isCharacteristic());
+        assertFalse(url.isField());
+
+        url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/180f/2a19");
+        assertFalse(url.isRoot());
+        assertFalse(url.isProtocol());
+        assertFalse(url.isAdapter());
+        assertFalse(url.isDevice());
+        assertFalse(url.isService());
+        assertTrue(url.isCharacteristic());
+        assertFalse(url.isField());
+
+        url = new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/180f/2a19/Level");
+        assertFalse(url.isRoot());
+        assertFalse(url.isProtocol());
+        assertFalse(url.isAdapter());
+        assertFalse(url.isDevice());
+        assertFalse(url.isService());
+        assertFalse(url.isCharacteristic());
+        assertTrue(url.isField());
+    }
+
+    @Test
+    public void testGetParent() {
+        URL url = new URL("dbus://54:60:09:95:86:01/11:22:33:44:55:66/0000180f/00002a19/Level");
+        assertTrue(url.isField());
+        url = url.getParent();
+        assertEquals(new URL("dbus://54:60:09:95:86:01/11:22:33:44:55:66/0000180f/00002a19"), url);
+        url = url.getParent();
+        assertEquals(new URL("dbus://54:60:09:95:86:01/11:22:33:44:55:66/0000180f"), url);
+        url = url.getParent();
+        assertEquals(new URL("dbus://54:60:09:95:86:01/11:22:33:44:55:66"), url);
+        url = url.getParent();
+        assertEquals(new URL("dbus://54:60:09:95:86:01"), url);
+        url = url.getParent();
+        assertEquals(new URL("dbus://"), url);
+        url = url.getParent();
+        assertNull(url);
     }
 
     @Test (expected = IllegalArgumentException.class)
@@ -110,6 +258,26 @@ public class URLTest {
     @Test(expected = IllegalArgumentException.class)
     public void testInvalidServiceUUIDLarge() {
         new URL("/0000180f0/2a19/Level");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMissingAdapter() {
+        new URL("tinyb", null, "11:22:33:44:55:66");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMissingDevice() {
+        new URL("tinyb", "54:60:09:95:86:01", null, "0000180f0", "2a19", "Level");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMissingService() {
+        new URL("tinyb", "54:60:09:95:86:01", "11:22:33:44:55:66", null, "2a19", "Level");
+    }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testMissingCharacteristic() {
+        new URL("tinyb", "54:60:09:95:86:01", "11:22:33:44:55:66", "0000180f0", null, "Level");
     }
 
     @Test
@@ -188,12 +356,14 @@ public class URLTest {
         URL service = new URL("/54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb");
         URL device = new URL("/54:60:09:95:86:01/11:22:33:44:55:66");
         URL adapter = new URL("/54:60:09:95:86:01");
+        URL protocol = new URL("tibyb://");
 
         assertFalse(field.isDescendant(field));
         assertTrue(field.isDescendant(characteristic));
         assertTrue(field.isDescendant(service));
         assertTrue(field.isDescendant(device));
         assertTrue(field.isDescendant(adapter));
+        assertTrue(field.isDescendant(protocol));
 
         assertFalse(characteristic.isDescendant(field));
         assertFalse(characteristic.isDescendant(characteristic));
@@ -228,12 +398,49 @@ public class URLTest {
         url = new URL("/54:60:09:95:86:02/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb");
         assertFalse(field.isDescendant(url));
 
+        url = new URL("dbus://54:60:09:95:86:02/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb");
+        assertTrue(url.isDescendant(new URL("dbus://54:60:09:95:86:02")));
+        assertFalse(url.isDescendant(new URL("tinyb://54:60:09:95:86:02")));
     }
 
     @Test
-    public void testEquals() {
-        String raw = "tinyb://00:1A:7D:DA:71:04/CF:FC:9E:B2:0E:63/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb";
-        assertTrue(new URL(raw).equals(new URL(raw)));
+    public void testEqualsAndHashCode() {
+        String raw = "tinyb://00:1A:7D:DA:71:04/CF:FC:9E:B2:0E:63/180f/2a19/Level";
+        URL url = new URL(raw);
+
+        assertTrue(url.equals(new URL(raw)));
+        assertEquals(url.hashCode(), new URL(raw).hashCode());
+
+        assertTrue(url.copyWithProtocol(null).equals(new URL(raw).copyWithProtocol(null)));
+        assertEquals(url.copyWithProtocol(null).hashCode(), new URL(raw).copyWithProtocol(null).hashCode());
+
+        assertFalse(url.equals(new URL(raw).copyWithProtocol(null)));
+        assertFalse(url.hashCode() == new URL(raw).copyWithProtocol(null).hashCode());
+
+        assertFalse(url.equals(new URL(raw).copyWithProtocol("dbus")));
+        assertFalse(url.hashCode() == new URL(raw).copyWithProtocol("dbus").hashCode());
+
+        assertFalse(url.equals(new URL(raw).copyWithAdapter("00:1A:7D:DA:71:05")));
+        assertFalse(url.hashCode() == new URL(raw).copyWithAdapter("00:1A:7D:DA:71:05").hashCode());
+
+        assertFalse(url.equals(new URL(raw).copyWithDevice("CF:FC:9E:B2:0E:64")));
+        assertFalse(url.hashCode() == new URL(raw).copyWithDevice("CF:FC:9E:B2:0E:64").hashCode());
+
+        assertFalse(url.equals(new URL(raw).copyWith("180a", "2a19")));
+        assertFalse(url.hashCode() == new URL(raw).copyWith("180a", "2a19").hashCode());
+
+        assertFalse(url.equals(new URL(raw).copyWith("180f", "2a18")));
+        assertFalse(url.hashCode() == new URL(raw).copyWith("180f", "2a18").hashCode());
+
+        assertFalse(url.equals(new URL(raw).copyWithField("Power")));
+        assertFalse(url.hashCode() == new URL(raw).copyWithField("Power").hashCode());
+
+        assertFalse(url.equals(new Object()));
+        assertFalse(url.equals(null));
+
+        assertTrue(url.equals(url));
+        assertTrue(url.hashCode() == url.hashCode());
+
     }
 
     @Test

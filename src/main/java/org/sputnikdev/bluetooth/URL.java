@@ -123,12 +123,12 @@ public class URL implements Comparable<URL> {
 
     /**
      * Constructs a URL pointing to a GATT service.
+     * @param protocol protocol name
      * @param adapterAddress bluetooth adapter MAC address
      * @param deviceAddress bluetooth device MAC address
-     * @param serviceUUID UUID of a GATT service
      */
-    public URL(String adapterAddress, String deviceAddress, String serviceUUID) {
-        this(adapterAddress, deviceAddress, serviceUUID, null, null);
+    public URL(String protocol, String adapterAddress, String deviceAddress) {
+        this(protocol, adapterAddress, deviceAddress, null, null, null);
     }
 
     /**
@@ -177,13 +177,32 @@ public class URL implements Comparable<URL> {
 
     /**
      * Makes a copy of a given URL with some additional components.
-     * @param serviceUUID UUID of a GATT service
-     * @param characteristicUUID UUID of a GATT characteristic
-     * @param fieldName name of a field of the characteristic
+     * @param protocol protocol name
      * @return a copy of a given URL with some additional components
      */
-    public URL copyWith(String serviceUUID, String characteristicUUID, String fieldName) {
-        return new URL(this.adapterAddress, this.deviceAddress, serviceUUID, characteristicUUID, fieldName);
+    public URL copyWithProtocol(String protocol) {
+        return new URL(protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID,
+                this.characteristicUUID, this.fieldName);
+    }
+
+    /**
+     * Makes a copy of a given URL with some additional components.
+     * @param adapterAddress bluetooth adapter MAC address
+     * @return a copy of a given URL with some additional components
+     */
+    public URL copyWithAdapter(String adapterAddress) {
+        return new URL(this.protocol, adapterAddress, this.deviceAddress, this.serviceUUID,
+                this.characteristicUUID, this.fieldName);
+    }
+
+    /**
+     * Makes a copy of a given URL with some additional components.
+     * @param deviceAddress bluetooth device MAC address
+     * @return a copy of a given URL with some additional components
+     */
+    public URL copyWithDevice(String deviceAddress) {
+        return new URL(this.protocol, this.adapterAddress, deviceAddress, this.serviceUUID,
+                this.characteristicUUID, this.fieldName);
     }
 
     /**
@@ -193,7 +212,19 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWith(String serviceUUID, String characteristicUUID) {
-        return new URL(this.adapterAddress, this.deviceAddress, serviceUUID, characteristicUUID);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, serviceUUID, characteristicUUID, null);
+    }
+
+    /**
+     * Makes a copy of a given URL with some additional components.
+     * @param serviceUUID UUID of a GATT service
+     * @param characteristicUUID UUID of a GATT characteristic
+     * @param fieldName name of a field of the characteristic
+     * @return a copy of a given URL with some additional components
+     */
+    public URL copyWith(String serviceUUID, String characteristicUUID, String fieldName) {
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, serviceUUID,
+                characteristicUUID, fieldName);
     }
 
     /**
@@ -201,17 +232,8 @@ public class URL implements Comparable<URL> {
      * @param fieldName name of a field of the characteristic
      * @return a copy of a given URL with some additional components
      */
-    public URL copyWith(String fieldName) {
-        return new URL(this.adapterAddress, this.deviceAddress, this.serviceUUID, this.characteristicUUID, fieldName);
-    }
-
-    /**
-     * Makes a copy of a given URL with some additional components.
-     * @param protocol protocol name
-     * @return a copy of a given URL with some additional components
-     */
-    public URL copyWithProtocol(String protocol) {
-        return new URL(protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID,
+    public URL copyWithField(String fieldName) {
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID,
                 this.characteristicUUID, fieldName);
     }
 
@@ -221,7 +243,7 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL truncated to the device component
      */
     public URL getDeviceURL() {
-        return new URL(adapterAddress, deviceAddress);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress);
     }
 
     /**
@@ -230,7 +252,7 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL truncated to the service component
      */
     public URL getServiceURL() {
-        return new URL(adapterAddress, deviceAddress, serviceUUID);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID, null, null);
     }
 
     /**
@@ -239,7 +261,8 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL truncated to the service component
      */
     public URL getCharacteristicURL() {
-        return new URL(adapterAddress, deviceAddress, serviceUUID, characteristicUUID);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID,
+                this.characteristicUUID, null);
     }
 
     /**
@@ -248,7 +271,16 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL truncated to the adapter component
      */
     public URL getAdapterURL() {
-        return new URL(adapterAddress, null);
+        return new URL(this.protocol, this.adapterAddress, null);
+    }
+
+    /**
+     * Returns a copy of a given URL truncated to its protocol component.
+     * Adapter, Device, Service, characteristic and field components will be null.
+     * @return a copy of a given URL truncated to the adapter component
+     */
+    public URL getProtocolURL() {
+        return new URL(this.protocol, null, null);
     }
 
     /**
@@ -297,6 +329,14 @@ public class URL implements Comparable<URL> {
      */
     public String getFieldName() {
         return fieldName;
+    }
+
+    /**
+     * Checks whether a given URL is the "root" URL object.
+     * @return true if it is the "root" URL, false otherwise
+     */
+    public boolean isProtocol() {
+        return protocol != null && adapterAddress == null;
     }
 
     /**
@@ -360,7 +400,9 @@ public class URL implements Comparable<URL> {
             return getDeviceURL();
         } else if (isDevice()) {
             return getAdapterURL();
-        } else {
+        } else if (isAdapter()) {
+            return getProtocolURL();
+        } else{
             return null;
         }
     }
@@ -371,13 +413,22 @@ public class URL implements Comparable<URL> {
      * @return true if a given URL is a descendant of a provided URL
      */
     public boolean isDescendant(URL url) {
-        if (adapterAddress != null && (!adapterAddress.equals(url.adapterAddress))) {
+        if (protocol != null && !protocol.equals(url.protocol)) {
+            return false;
+        }
+
+        if (adapterAddress != null && url.adapterAddress == null) {
+            return true;
+        }
+
+        if (adapterAddress != null && !adapterAddress.equals(url.adapterAddress)) {
             return false;
         }
 
         if (deviceAddress != null && url.deviceAddress == null) {
             return true;
         }
+
         if (deviceAddress != null && !deviceAddress.equals(url.deviceAddress)) {
             return false;
         }
