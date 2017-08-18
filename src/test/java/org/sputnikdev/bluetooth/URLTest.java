@@ -364,6 +364,7 @@ public class URLTest {
         assertTrue(field.isDescendant(device));
         assertTrue(field.isDescendant(adapter));
         assertTrue(field.isDescendant(protocol));
+        assertTrue(field.isDescendant(URL.ROOT));
 
         assertFalse(characteristic.isDescendant(field));
         assertFalse(characteristic.isDescendant(characteristic));
@@ -401,6 +402,9 @@ public class URLTest {
         url = new URL("dbus://54:60:09:95:86:02/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb");
         assertTrue(url.isDescendant(new URL("dbus://54:60:09:95:86:02")));
         assertFalse(url.isDescendant(new URL("tinyb://54:60:09:95:86:02")));
+
+        assertTrue(url.isDescendant(new URL("/54:60:09:95:86:02")));
+        assertTrue(url.isDescendant(URL.ROOT));
     }
 
     @Test

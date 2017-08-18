@@ -408,12 +408,13 @@ public class URL implements Comparable<URL> {
     }
 
     /**
-     * Checks whether a given URL is a descendant of a URL provided as an argument
+     * Checks whether the URL is a descendant of a URL provided as an argument.
+     * If the provided URL does not specify protocol, then it will match any protocol of the URL
      * @param url a bluetooth URL
-     * @return true if a given URL is a descendant of a provided URL
+     * @return true if the URL is a descendant of a provided URL
      */
     public boolean isDescendant(URL url) {
-        if (protocol != null && !protocol.equals(url.protocol)) {
+        if (url.protocol != null && protocol != null && !protocol.equals(url.protocol)) {
             return false;
         }
 
