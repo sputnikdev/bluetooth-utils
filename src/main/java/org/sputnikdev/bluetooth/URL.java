@@ -208,6 +208,24 @@ public class URL implements Comparable<URL> {
     /**
      * Makes a copy of a given URL with some additional components.
      * @param serviceUUID UUID of a GATT service
+     * @return a copy of a given URL with some additional components
+     */
+    public URL copyWithService(String serviceUUID) {
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, serviceUUID, null, null);
+    }
+
+    /**
+     * Makes a copy of a given URL with some additional components.
+     * @param characteristicUUID UUID of a GATT characteristic
+     * @return a copy of a given URL with some additional components
+     */
+    public URL copyWithCharacteristic(String characteristicUUID) {
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, serviceUUID, characteristicUUID, null);
+    }
+
+    /**
+     * Makes a copy of a given URL with some additional components.
+     * @param serviceUUID UUID of a GATT service
      * @param characteristicUUID UUID of a GATT characteristic
      * @return a copy of a given URL with some additional components
      */

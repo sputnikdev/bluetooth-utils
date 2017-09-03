@@ -62,12 +62,16 @@ public class URLTest {
         assertEquals(new URL("tinyb://54:60:09:95:86:01"), url);
         url = url.copyWithDevice("11:22:33:44:55:66");
         assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66"), url);
-        url = url.copyWith("0000180f-0000-1000-8000-00805f9b34fb", "00002a19-0000-1000-8000-00805f9b34fb");
+        url = url.copyWithService("0000180f-0000-1000-8000-00805f9b34fb");
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb"), url);
+        url = url.copyWithCharacteristic("00002a19-0000-1000-8000-00805f9b34fb");
         assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb"), url);
-        url = url.copyWith("0000180f-0000-1000-8000-00805f9b34fb", "00002a19-0000-1000-8000-00805f9b34fb", "Level");
-        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level"), url);
+        url = url.copyWith("0000180f-0000-1000-8000-00805f9b34fc", "00002a19-0000-1000-8000-00805f9b34fc");
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fc/00002a19-0000-1000-8000-00805f9b34fc"), url);
+        url = url.copyWith("0000180f-0000-1000-8000-00805f9b34fd", "00002a19-0000-1000-8000-00805f9b34fd", "Level");
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fd/00002a19-0000-1000-8000-00805f9b34fd/Level"), url);
         url = url.copyWithField("Power");
-        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Power"), url);
+        assertEquals(new URL("tinyb://54:60:09:95:86:01/11:22:33:44:55:66/0000180f-0000-1000-8000-00805f9b34fd/00002a19-0000-1000-8000-00805f9b34fd/Power"), url);
 
     }
 
