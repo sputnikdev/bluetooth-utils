@@ -453,8 +453,8 @@ public class URLTest {
 
     @Test
     public void testCompareToHappyCase() {
-        URL url1 = new URL("2", "2", "2", "2", "2", "2");
-        URL url2 = new URL("2", "2", "2", "2", "2", "2");
+        Comparable url1 = new URL("2", "2", "2", "2", "2", "2");
+        Comparable url2 = new URL("2", "2", "2", "2", "2", "2");
         assertEquals(0, url1.compareTo(url2));
         assertEquals(0, url2.compareTo(url1));
 
