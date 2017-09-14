@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/sputnikdev/bluetooth-utils.svg?branch=master)](https://travis-ci.org/sputnikdev/bluetooth-utils)
+[![Coverage Status](https://coveralls.io/repos/github/sputnikdev/bluetooth-utils/badge.svg?branch=master)](https://coveralls.io/github/sputnikdev/bluetooth-utils?branch=master)
 # bluetooth-utils
 A small library of utility classes to work with Bluetooth Smart objects.
 
