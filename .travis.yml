@@ -1,5 +1,7 @@
 language: java
 script: mvn clean install
 notifications:
-    slack: kolotov:MSiPC13G3BDRh7q08Mum7yKB
+    slack: kolotov:69j2qLZ0paybeuQMcKfyN2gP
 before_deploy: git checkout master
+after_success:
+  - mvn clean cobertura:cobertura coveralls:report
