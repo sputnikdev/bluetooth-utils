@@ -1,0 +1,5 @@
+language: java
+script: mvn clean install
+notifications:
+    slack: kolotov:MSiPC13G3BDRh7q08Mum7yKB
+before_deploy: git checkout master
