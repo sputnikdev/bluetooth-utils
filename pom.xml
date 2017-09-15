@@ -59,19 +59,19 @@
 
     <profiles>
         <profile>
-            <id>release-sign-artifacts</id>
-            <activation>
-                <property>
-                    <name>gpg</name>
-                    <value>true</value>
-                </property>
-            </activation>
+            <id>release</id>
+            <!--<activation>-->
+                <!--<property>-->
+                    <!--<name>gpg</name>-->
+                    <!--<value>true</value>-->
+                <!--</property>-->
+            <!--</activation>-->
             <build>
                 <plugins>
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
-                        <version>1.5</version>
+                        <version>1.6</version>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -81,6 +81,28 @@
                                 </goals>
                             </execution>
                         </executions>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-release-plugin</artifactId>
+                        <version>2.5.3</version>
+                        <configuration>
+                            <autoVersionSubmodules>true</autoVersionSubmodules>
+                            <useReleaseProfile>false</useReleaseProfile>
+                            <releaseProfiles>release</releaseProfiles>
+                            <goals>deploy</goals>
+                        </configuration>
+                    </plugin>
+                    <plugin>
+                        <groupId>org.sonatype.plugins</groupId>
+                        <artifactId>nexus-staging-maven-plugin</artifactId>
+                        <version>1.6.7</version>
+                        <extensions>true</extensions>
+                        <configuration>
+                            <serverId>ossrh-staging</serverId>
+                            <nexusUrl>https://oss.sonatype.org/</nexusUrl>
+                            <autoReleaseAfterClose>true</autoReleaseAfterClose>
+                        </configuration>
                     </plugin>
                 </plugins>
             </build>
@@ -98,28 +120,6 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-release-plugin</artifactId>
-                <version>2.5.3</version>
-                <configuration>
-                    <autoVersionSubmodules>true</autoVersionSubmodules>
-                    <useReleaseProfile>false</useReleaseProfile>
-                    <releaseProfiles>release</releaseProfiles>
-                    <goals>deploy</goals>
-                </configuration>
-            </plugin>
-            <plugin>
-                <groupId>org.sonatype.plugins</groupId>
-                <artifactId>nexus-staging-maven-plugin</artifactId>
-                <version>1.6.7</version>
-                <extensions>true</extensions>
-                <configuration>
-                    <serverId>ossrh-staging</serverId>
-                    <nexusUrl>https://oss.sonatype.org/</nexusUrl>
-                    <autoReleaseAfterClose>true</autoReleaseAfterClose>
-                </configuration>
-            </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
@@ -155,7 +155,7 @@
                     <maxmem>256m</maxmem>
                     <!-- aggregated reports for multi-module projects -->
                     <aggregate>true</aggregate>
-                    <check/>
+                    <check />
                 </configuration>
             </plugin>
             <plugin>
