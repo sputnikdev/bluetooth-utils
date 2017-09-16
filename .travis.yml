@@ -19,5 +19,5 @@ cache:
     - ~/.m2/repository
 
 after_success:
-  - before-deploy.sh
-  - deploy.sh
+  - .travis/before-deploy.sh
+  - .travis/deploy.sh
