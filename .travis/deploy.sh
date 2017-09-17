@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-if [[ "$TRAVIS_BRANCH" == release* ]] && [[ "$TRAVIS_PULL_REQUEST" == 'false' ]] && [[ "$TRAVIS_TAG" == release* ]] ; then
-    #mvn deploy -P sign,build-extras --settings .travis/settings.xml
-    mvn release:prepare -B -P sign,build-extras --settings .travis/settings.xml
-    mvn release:perform -B -P sign,build-extras --settings .travis/settings.xml
+ARTIFACT_NAME=$( echo "$TRAVIS_REPO_SLUG" | sed 's:.*/::' )
+if [ "$TRAVIS_PULL_REQUEST" == 'false' ] && [ ! -z "$TRAVIS_TAG" ]
+then
+    echo "on a tag -> set pom.xml <version> to $TRAVIS_TAG"
+    mvn --settings .travis/settings.xml org.codehaus.mojo:versions-maven-plugin:2.1:set -DnewVersion=$ARTIFACT_NAME-$TRAVIS_TAG 1>/dev/null 2>/dev/null
+    mvn deploy -P sign,build-extras --settings .travis/settings.xml
 fi
