@@ -25,7 +25,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- *
  * Class {@code URL} represents a Uniform Resource Locator for bluetooth resources,
  * e.g. bluetooth adapters, bluetooth devices, GATT services, GATT characteristics and GATT fields.
  * For example, if you have an adapter with MAC address B8:27:EB:60:0C:43,
@@ -38,16 +37,21 @@ import java.util.regex.Pattern;
  * /B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb
  * Similarly, it is easy to define a URL for other components, e.g. adapters, devices and characteristics.
  *
- * If there are more than one protocol used to access Bluetooth devices (e.g. DBus, serial interface etc),
+ * <p>If there are more than one protocol used to access Bluetooth devices (e.g. DBus, serial interface etc),
  * then it is possible to define protocol as well:
- * tinyb://B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level
+ * tinyb://B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb/
+ * 00002a19-0000-1000-8000-00805f9b34fb/Level
  *
  * @author Vlad Kolotov
  */
 public class URL implements Comparable<URL> {
 
     public static final Pattern URL_PATTERN =
-            Pattern.compile("^((?<protocol>\\w*):/)?/(?<adapter>(\\w\\w:){5}\\w\\w)?(/(?<device>(\\w\\w:){5}\\w\\w))?(/(?<service>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))?(/(?<characteristic>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))?(/(?<field>\\w+))?$");
+            Pattern.compile("^((?<protocol>\\w*):/)?/(?<adapter>(\\w\\w:){5}\\w\\w)"
+                    + "?(/(?<device>(\\w\\w:){5}\\w\\w))"
+                    + "?(/(?<service>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))"
+                    + "?(/(?<characteristic>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))"
+                    + "?(/(?<field>\\w+))?$");
 
     public static final URL ROOT = new URL("/");
 
@@ -62,27 +66,28 @@ public class URL implements Comparable<URL> {
      * Constructor to build a URL object from its text representation.
      * E.g. / bluetooth adapter / bluetooth device / GATT service / GATT characteristic / Characteristic Field Name
      *
-     * The following are some examples of a valid URL:
+     * <p>The following are some examples of a valid URL:
      *
-     * URL pointing to a field:
-     * /B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level
+     * <p>URL pointing to a field:
+     * /B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb/
+     * 00002a19-0000-1000-8000-00805f9b34fb/Level
      *
-     * URL pointing to a characteristic:
+     * <p>URL pointing to a characteristic:
      * /B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb
      *
-     * URL pointing to a service:
+     * <p>URL pointing to a service:
      * /B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f-0000-1000-8000-00805f9b34fb
      *
-     * URL pointing to a bluetooth device:
+     * <p>URL pointing to a bluetooth device:
      * /B8:27:EB:60:0C:43/54:60:09:95:86:01
      *
-     * URL point to a bluetooth adapter:
+     * <p>URL point to a bluetooth adapter:
      * /B8:27:EB:60:0C:43
      *
-     * URL pointing to the "root":
+     * <p>URL pointing to the "root":
      * /
      *
-     * Services and characteristic UUIDs can be in a short form:
+     * <p>Services and characteristic UUIDs can be in a short form:
      * /B8:27:EB:60:0C:43/54:60:09:95:86:01/0000180f/00002a19/Level
      * /B8:27:EB:60:0C:43/54:60:09:95:86:01/180f/2a19/Level
      *
@@ -420,7 +425,7 @@ public class URL implements Comparable<URL> {
             return getAdapterURL();
         } else if (isAdapter()) {
             return getProtocolURL();
-        } else{
+        } else {
             return null;
         }
     }
@@ -462,8 +467,8 @@ public class URL implements Comparable<URL> {
         if (characteristicUUID != null && url.characteristicUUID == null) {
             return true;
         }
-        if (characteristicUUID != null ?
-                !characteristicUUID.equals(url.characteristicUUID) :
+        if (characteristicUUID != null
+                ? !characteristicUUID.equals(url.characteristicUUID) :
                 url.characteristicUUID != null) {
             return false;
         }
@@ -488,15 +493,15 @@ public class URL implements Comparable<URL> {
     }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) {
+    public boolean equals(Object that) {
+        if (this == that) {
             return true;
         }
-        if (o == null || getClass() != o.getClass()) {
+        if (that == null || getClass() != that.getClass()) {
             return false;
         }
 
-        URL url = (URL) o;
+        URL url = (URL) that;
 
         if (protocol != null ? !protocol.equals(url.protocol) : url.protocol != null) {
             return false;
@@ -510,8 +515,8 @@ public class URL implements Comparable<URL> {
         if (serviceUUID != null ? !serviceUUID.equals(url.serviceUUID) : url.serviceUUID != null) {
             return false;
         }
-        if (characteristicUUID != null ?
-                !characteristicUUID.equals(url.characteristicUUID) :
+        if (characteristicUUID != null
+                ? !characteristicUUID.equals(url.characteristicUUID) :
                 url.characteristicUUID != null) {
             return false;
         }
@@ -531,31 +536,31 @@ public class URL implements Comparable<URL> {
     }
 
     @Override
-    public int compareTo(URL o) {
-        int result = compareFields(adapterAddress, o.adapterAddress);
+    public int compareTo(URL that) {
+        int result = compareFields(adapterAddress, that.adapterAddress);
         if (result != 0) {
             return result;
         }
-        result = compareFields(deviceAddress, o.deviceAddress);
+        result = compareFields(deviceAddress, that.deviceAddress);
         if (result != 0) {
             return result;
         }
-        result = compareFields(serviceUUID, o.serviceUUID);
+        result = compareFields(serviceUUID, that.serviceUUID);
         if (result != 0) {
             return result;
         }
-        result = compareFields(characteristicUUID, o.characteristicUUID);
+        result = compareFields(characteristicUUID, that.characteristicUUID);
         if (result != 0) {
             return result;
         }
-        return compareFields(fieldName, o.fieldName);
+        return compareFields(fieldName, that.fieldName);
     }
 
     private void validate() {
-        if (fieldName != null && characteristicUUID == null ||
-                characteristicUUID != null && serviceUUID == null ||
-                serviceUUID != null && deviceAddress == null ||
-                deviceAddress != null && adapterAddress == null) {
+        if (fieldName != null && characteristicUUID == null
+                || characteristicUUID != null && serviceUUID == null
+                || serviceUUID != null && deviceAddress == null
+                || deviceAddress != null && adapterAddress == null) {
             throw new IllegalArgumentException("Invalid url: " + toString());
         }
     }
