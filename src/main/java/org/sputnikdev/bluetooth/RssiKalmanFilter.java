@@ -1,5 +1,8 @@
 package org.sputnikdev.bluetooth;
 
+/**
+ * A simple implementation of the Kalman filter to smooth RSSI readings.
+ */
 public class RssiKalmanFilter implements Filter<Short> {
 
     private static final double RSSI_PROCESS_NOISE = 0.125;
@@ -10,11 +13,21 @@ public class RssiKalmanFilter implements Filter<Short> {
     private double currentRssi;
     private double errorCovariance;
 
+    /**
+     * Creates an instance of the filter with some default settings (factors):
+     * <br/>Process noise: 0.125
+     * <br/>Measurement noise: 30
+     */
     public RssiKalmanFilter() {
         processNoise = RSSI_PROCESS_NOISE;
         measurementNoise = RSSI_MEASUREMENT_NOISE;
     }
 
+    /**
+     * Creates an instance of the filter with some provided settings (factors).
+     * @param processNoise process noise factor
+     * @param measurementNoise measurement noise factor
+     */
     public RssiKalmanFilter(double processNoise, double measurementNoise) {
         this.processNoise = processNoise;
         this.measurementNoise = measurementNoise;
@@ -42,18 +55,34 @@ public class RssiKalmanFilter implements Filter<Short> {
         return (short) currentRssi;
     }
 
+    /**
+     * Returns the process noise factor.
+     * @return process noise factor
+     */
     public double getProcessNoise() {
         return processNoise;
     }
 
+    /**
+     * Sets the process noise factor.
+     * @param processNoise process noise factor
+     */
     public void setProcessNoise(double processNoise) {
         this.processNoise = processNoise;
     }
 
+    /**
+     * Returns the measurement noise factor.
+     * @return measurement noise factor
+     */
     public double getMeasurementNoise() {
         return measurementNoise;
     }
 
+    /**
+     * Sets the measurement noise factor.
+     * @param measurementNoise measurement noise factor
+     */
     public void setMeasurementNoise(double measurementNoise) {
         this.measurementNoise = measurementNoise;
     }
