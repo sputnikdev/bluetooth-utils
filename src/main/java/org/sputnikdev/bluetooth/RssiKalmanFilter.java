@@ -15,8 +15,8 @@ public class RssiKalmanFilter implements Filter<Short> {
 
     /**
      * Creates an instance of the filter with some default settings (factors):
-     * <br/>Process noise: 0.125
-     * <br/>Measurement noise: 30
+     * <br>Process noise: 0.125
+     * <br>Measurement noise: 30.
      */
     public RssiKalmanFilter() {
         processNoise = RSSI_PROCESS_NOISE;
