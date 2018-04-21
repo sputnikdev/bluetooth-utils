@@ -21,6 +21,7 @@ package org.sputnikdev.bluetooth;
  */
 
 import java.util.LinkedList;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -46,11 +47,11 @@ import java.util.regex.Pattern;
  */
 public class URL implements Comparable<URL> {
 
-    public static final Pattern URL_PATTERN =
+    private static final Pattern URL_PATTERN =
             Pattern.compile("^((?<protocol>\\w*):/)?/(?<adapter>(\\w\\w:){5}\\w\\w)"
                     + "?(/(?<device>(\\w\\w:){5}\\w\\w))"
-                    + "?(/(?<service>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))"
-                    + "?(/(?<characteristic>[0-9a-f]{4,8}(-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12})?))"
+                    + "?(/(?<service>[0-9A-Fa-f]{4,8}(-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})?))"
+                    + "?(/(?<charact>[0-9A-Fa-f]{4,8}(-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})?))"
                     + "?(/(?<field>\\w+))?$");
 
     public static final URL ROOT = new URL("/");
@@ -97,12 +98,12 @@ public class URL implements Comparable<URL> {
     public URL(String url) {
         Matcher matcher = URL_PATTERN.matcher(url);
         if (matcher.find()) {
-            this.protocol = matcher.group("protocol");
-            this.adapterAddress = matcher.group("adapter");
-            this.deviceAddress = matcher.group("device");
-            this.serviceUUID = matcher.group("service");
-            this.characteristicUUID = matcher.group("characteristic");
-            this.fieldName = matcher.group("field");
+            protocol = toLowerCase(matcher.group("protocol"));
+            adapterAddress = toUpperCase(matcher.group("adapter"));
+            deviceAddress = toUpperCase(matcher.group("device"));
+            serviceUUID = toLowerCase(matcher.group("service"));
+            characteristicUUID = toLowerCase(matcher.group("charact"));
+            fieldName = matcher.group("field");
             validate();
         } else {
             throw new IllegalArgumentException("Invalid URL: " + url);
@@ -171,11 +172,11 @@ public class URL implements Comparable<URL> {
      */
     public URL(String protocol, String adapterAddress, String deviceAddress, String serviceUUID,
             String characteristicUUID, String fieldName) {
-        this.protocol = protocol;
-        this.adapterAddress = adapterAddress;
-        this.deviceAddress = deviceAddress;
-        this.serviceUUID = serviceUUID;
-        this.characteristicUUID = characteristicUUID;
+        this.protocol = toLowerCase(protocol);
+        this.adapterAddress = toUpperCase(adapterAddress);
+        this.deviceAddress = toUpperCase(deviceAddress);
+        this.serviceUUID = toLowerCase(serviceUUID);
+        this.characteristicUUID = toLowerCase(characteristicUUID);
         this.fieldName = fieldName;
         validate();
     }
@@ -520,7 +521,8 @@ public class URL implements Comparable<URL> {
                 url.characteristicUUID != null) {
             return false;
         }
-        return fieldName != null ? fieldName.equals(url.fieldName) : url.fieldName == null;
+        return fieldName != null && url.fieldName != null
+                ? fieldName.toLowerCase().equals(url.fieldName.toLowerCase()) : fieldName == url.fieldName;
 
     }
 
@@ -531,7 +533,7 @@ public class URL implements Comparable<URL> {
         result = 31 * result + (deviceAddress != null ? deviceAddress.hashCode() : 0);
         result = 31 * result + (serviceUUID != null ? serviceUUID.hashCode() : 0);
         result = 31 * result + (characteristicUUID != null ? characteristicUUID.hashCode() : 0);
-        result = 31 * result + (fieldName != null ? fieldName.hashCode() : 0);
+        result = 31 * result + (fieldName != null ? fieldName.toLowerCase().hashCode() : 0);
         return result;
     }
 
@@ -575,5 +577,13 @@ public class URL implements Comparable<URL> {
         } else {
             return field1.compareTo(field2);
         }
+    }
+
+    private static String toUpperCase(String str) {
+        return Optional.ofNullable(str).map(String::toUpperCase).orElse(null);
+    }
+
+    private static String toLowerCase(String str) {
+        return Optional.ofNullable(str).map(String::toLowerCase).orElse(null);
     }
 }

@@ -416,7 +416,7 @@ public class URLTest {
         String raw = "tinyb://00:1A:7D:DA:71:04/CF:FC:9E:B2:0E:63/180f/2a19/Level";
         URL url = new URL(raw);
 
-        assertTrue(url.equals(new URL(raw)));
+        assertTrue(url.equals(new URL("tInyB://00:1a:7D:dA:71:04/CF:fC:9E:b2:0E:63/180F/2A19/leVel")));
         assertEquals(url.hashCode(), new URL(raw).hashCode());
 
         assertTrue(url.copyWithProtocol(null).equals(new URL(raw).copyWithProtocol(null)));
