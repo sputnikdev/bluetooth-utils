@@ -3,7 +3,7 @@
 
     <groupId>org.sputnikdev</groupId>
     <artifactId>bluetooth-utils</artifactId>
-    <version>1.13-SNAPSHOT</version>
+    <version>1.13</version>
     <packaging>jar</packaging>
 
     <name>${project.groupId}:${project.artifactId}</name>
@@ -43,7 +43,7 @@
         <url>https://github.com/sputnikdev/bluetooth-utils/tree/master</url>
         <connection>scm:git:git@github.com:sputnikdev/bluetooth-utils.git</connection>
         <developerConnection>scm:git:git@github.com:sputnikdev/bluetooth-utils.git</developerConnection>
-        <tag>HEAD</tag>
+        <tag>bluetooth-utils-1.13</tag>
     </scm>
 
     <distributionManagement>
