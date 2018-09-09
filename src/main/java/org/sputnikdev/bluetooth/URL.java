@@ -20,10 +20,14 @@ package org.sputnikdev.bluetooth;
  * #L%
  */
 
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 /**
  * Class {@code URL} represents a Uniform Resource Locator for bluetooth resources,
@@ -48,17 +52,18 @@ import java.util.regex.Pattern;
 public class URL implements Comparable<URL> {
 
     private static final Pattern URL_PATTERN =
-            Pattern.compile("^((?<protocol>\\w*):/)?/(?<adapter>(\\w\\w:){5}\\w\\w)"
-                    + "?(/(?<device>(\\w\\w:){5}\\w\\w))"
-                    + "?(/(?<service>[0-9A-Fa-f]{4,8}(-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})?))"
-                    + "?(/(?<charact>[0-9A-Fa-f]{4,8}(-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})?))"
-                    + "?(/(?<field>\\w+))?$");
+            Pattern.compile("^((?<protocol>\\w*):)?/(?<adapter>(\\w\\w:){5}\\w\\w)?"
+                    + "(/(?<device>(\\w\\w:){5}\\w\\w)?(\\[name=(?<devicename>[\\w\\s']+)\\])?)?"
+                    + "(/(?<service>[0-9A-Fa-f]{4,8}(-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})?))?"
+                    + "(/(?<charact>[0-9A-Fa-f]{4,8}(-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})?))?"
+                    + "(/(?<field>\\w+))?$");
 
     public static final URL ROOT = new URL("/");
 
     private final String protocol;
     private final String adapterAddress;
     private final String deviceAddress;
+    private final Map<String, String> deviceAttributes = new HashMap<>();
     private final String serviceUUID;
     private final String characteristicUUID;
     private final String fieldName;
@@ -101,6 +106,10 @@ public class URL implements Comparable<URL> {
             protocol = toLowerCase(matcher.group("protocol"));
             adapterAddress = toUpperCase(matcher.group("adapter"));
             deviceAddress = toUpperCase(matcher.group("device"));
+            String deviceName = matcher.group("devicename");
+            if (deviceName != null) {
+                deviceAttributes.put("name", deviceName);
+            }
             serviceUUID = toLowerCase(matcher.group("service"));
             characteristicUUID = toLowerCase(matcher.group("charact"));
             fieldName = matcher.group("field");
@@ -171,10 +180,47 @@ public class URL implements Comparable<URL> {
      * @param fieldName name of a field of the characteristic
      */
     public URL(String protocol, String adapterAddress, String deviceAddress, String serviceUUID,
-            String characteristicUUID, String fieldName) {
+               String characteristicUUID, String fieldName) {
         this.protocol = toLowerCase(protocol);
         this.adapterAddress = toUpperCase(adapterAddress);
         this.deviceAddress = toUpperCase(deviceAddress);
+        this.serviceUUID = toLowerCase(serviceUUID);
+        this.characteristicUUID = toLowerCase(characteristicUUID);
+        this.fieldName = fieldName;
+        validate();
+    }
+
+    /**
+     * Copy constructor.
+     * @param protocol protocol name
+     * @param adapterAddress bluetooth adapter MAC address
+     * @param deviceAttributes bluetooth device attributes
+     * @param serviceUUID UUID of a GATT service
+     * @param characteristicUUID UUID of a GATT characteristic
+     * @param fieldName name of a field of the characteristic
+     */
+    public URL(String protocol, String adapterAddress, Map<String, String> deviceAttributes,
+               String serviceUUID, String characteristicUUID, String fieldName) {
+        this.protocol = toLowerCase(protocol);
+        this.adapterAddress = toUpperCase(adapterAddress);
+        this.deviceAddress = null;
+        if (deviceAttributes != null && !deviceAttributes.isEmpty()) {
+            this.deviceAttributes.putAll(deviceAttributes);
+        }
+        this.serviceUUID = toLowerCase(serviceUUID);
+        this.characteristicUUID = toLowerCase(characteristicUUID);
+        this.fieldName = fieldName;
+        validate();
+    }
+
+    URL(String protocol, String adapterAddress, String deviceAddress, Map<String, String> deviceAttributes,
+                String serviceUUID, String characteristicUUID, String fieldName) {
+        this.protocol = toLowerCase(protocol);
+        this.adapterAddress = toUpperCase(adapterAddress);
+        this.deviceAddress = toUpperCase(deviceAddress);
+        if (deviceAttributes != null && !deviceAttributes.isEmpty()) {
+            this.deviceAttributes.putAll(deviceAttributes);
+        }
         this.serviceUUID = toLowerCase(serviceUUID);
         this.characteristicUUID = toLowerCase(characteristicUUID);
         this.fieldName = fieldName;
@@ -187,7 +233,7 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWithProtocol(String protocol) {
-        return new URL(protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID,
+        return new URL(protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes, this.serviceUUID,
                 this.characteristicUUID, this.fieldName);
     }
 
@@ -197,7 +243,7 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWithAdapter(String adapterAddress) {
-        return new URL(this.protocol, adapterAddress, this.deviceAddress, this.serviceUUID,
+        return new URL(this.protocol, adapterAddress, this.deviceAddress, this.deviceAttributes, this.serviceUUID,
                 this.characteristicUUID, this.fieldName);
     }
 
@@ -207,8 +253,31 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWithDevice(String deviceAddress) {
-        return new URL(this.protocol, this.adapterAddress, deviceAddress, this.serviceUUID,
+        return new URL(this.protocol, this.adapterAddress, deviceAddress, this.deviceAttributes, this.serviceUUID,
                 this.characteristicUUID, this.fieldName);
+    }
+
+    /**
+     * Makes a copy of a given URL with some additional components.
+     * @param deviceAddress bluetooth device MAC address
+     * @param attr device attributes
+     * @return a copy of a given URL with some additional components
+     */
+    public URL copyWithDevice(String deviceAddress, Map<String, String> attr) {
+        return new URL(this.protocol, this.adapterAddress, deviceAddress, attr, this.serviceUUID,
+                this.characteristicUUID, this.fieldName);
+    }
+
+    /**
+     * Makes a copy of a given URL with a new device name and a single attribute.
+     * @param deviceAddress bluetooth device MAC address
+     * @param attrName attribute name
+     * @param attrValue attribute value
+     * @return a copy of a given URL with some additional components
+     */
+    public URL copyWithDevice(String deviceAddress, String attrName, String attrValue) {
+        return new URL(this.protocol, this.adapterAddress, deviceAddress, Collections.singletonMap(attrName, attrValue),
+                this.serviceUUID, this.characteristicUUID, this.fieldName);
     }
 
     /**
@@ -217,7 +286,8 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWithService(String serviceUUID) {
-        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, serviceUUID, null, null);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes,
+                serviceUUID, null, null);
     }
 
     /**
@@ -226,7 +296,8 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWithCharacteristic(String characteristicUUID) {
-        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, serviceUUID, characteristicUUID, null);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes,
+                serviceUUID, characteristicUUID, null);
     }
 
     /**
@@ -236,7 +307,8 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWith(String serviceUUID, String characteristicUUID) {
-        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, serviceUUID, characteristicUUID, null);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes,
+                serviceUUID, characteristicUUID, null);
     }
 
     /**
@@ -247,7 +319,7 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWith(String serviceUUID, String characteristicUUID, String fieldName) {
-        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, serviceUUID,
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes, serviceUUID,
                 characteristicUUID, fieldName);
     }
 
@@ -257,7 +329,7 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL with some additional components
      */
     public URL copyWithField(String fieldName) {
-        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID,
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes, this.serviceUUID,
                 this.characteristicUUID, fieldName);
     }
 
@@ -267,7 +339,15 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL truncated to the device component
      */
     public URL getDeviceURL() {
-        return new URL(this.protocol, this.adapterAddress, this.deviceAddress);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes, null, null, null);
+    }
+
+    public Map<String, String> getDeviceAttributes() {
+        return Collections.unmodifiableMap(deviceAttributes);
+    }
+
+    public String getDeviceName() {
+        return deviceAttributes.get("name");
     }
 
     /**
@@ -276,7 +356,8 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL truncated to the service component
      */
     public URL getServiceURL() {
-        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID, null, null);
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes,
+                this.serviceUUID, null, null);
     }
 
     /**
@@ -285,7 +366,7 @@ public class URL implements Comparable<URL> {
      * @return a copy of a given URL truncated to the service component
      */
     public URL getCharacteristicURL() {
-        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.serviceUUID,
+        return new URL(this.protocol, this.adapterAddress, this.deviceAddress, this.deviceAttributes, this.serviceUUID,
                 this.characteristicUUID, null);
     }
 
@@ -329,6 +410,19 @@ public class URL implements Comparable<URL> {
      */
     public String getDeviceAddress() {
         return deviceAddress;
+    }
+
+    /**
+     * Returns bluetooth device composite address (a combination of the address and its attributes).
+     * @return bluetooth device composite address
+     */
+    public String getDeviceCompositeAddress() {
+        String device = deviceAddress;
+        if (!deviceAttributes.isEmpty()) {
+            device = (device != null ? device : "") + deviceAttributes.entrySet().stream()
+                    .map(Map.Entry::toString).collect(Collectors.joining(",", "[", "]"));
+        }
+        return device;
     }
 
     /**
@@ -376,7 +470,7 @@ public class URL implements Comparable<URL> {
      * @return true if a given URL is pointing to a bluetooth adapter, false otherwise
      */
     public boolean isAdapter() {
-        return adapterAddress != null && deviceAddress == null;
+        return adapterAddress != null && deviceAddress == null && deviceAttributes.isEmpty();
     }
 
     /**
@@ -384,7 +478,7 @@ public class URL implements Comparable<URL> {
      * @return true if a given URL is pointing to a bluetooth device, false otherwise
      */
     public boolean isDevice() {
-        return deviceAddress != null && serviceUUID == null;
+        return (deviceAddress != null || !deviceAttributes.isEmpty()) && serviceUUID == null;
     }
 
     /**
@@ -480,7 +574,12 @@ public class URL implements Comparable<URL> {
     @Override
     public String toString() {
         LinkedList<String> fields = new LinkedList<>();
-        fields.add(adapterAddress);
+        String deviceAddress = getDeviceCompositeAddress();
+        if (adapterAddress == null && deviceAddress != null) {
+            fields.add("");
+        } else {
+            fields.add(adapterAddress);
+        }
         fields.add(deviceAddress);
         fields.add(serviceUUID);
         fields.add(characteristicUUID);
@@ -490,7 +589,7 @@ public class URL implements Comparable<URL> {
             fields.removeLast();
         }
 
-        return (protocol != null ? protocol + ":/" : "") + "/" + String.join("/", fields);
+        return (protocol != null ? protocol + ":" : "") + "/" + String.join("/", fields);
     }
 
     @Override
@@ -513,6 +612,9 @@ public class URL implements Comparable<URL> {
         if (deviceAddress != null ? !deviceAddress.equals(url.deviceAddress) : url.deviceAddress != null) {
             return false;
         }
+        if (!deviceAttributes.equals(url.deviceAttributes)) {
+            return false;
+        }
         if (serviceUUID != null ? !serviceUUID.equals(url.serviceUUID) : url.serviceUUID != null) {
             return false;
         }
@@ -531,6 +633,7 @@ public class URL implements Comparable<URL> {
         int result = protocol != null ? protocol.hashCode() : 0;
         result = 31 * result + (adapterAddress != null ? adapterAddress.hashCode() : 0);
         result = 31 * result + (deviceAddress != null ? deviceAddress.hashCode() : 0);
+        result = 31 * result + deviceAttributes.hashCode();
         result = 31 * result + (serviceUUID != null ? serviceUUID.hashCode() : 0);
         result = 31 * result + (characteristicUUID != null ? characteristicUUID.hashCode() : 0);
         result = 31 * result + (fieldName != null ? fieldName.toLowerCase().hashCode() : 0);
@@ -547,6 +650,7 @@ public class URL implements Comparable<URL> {
         if (result != 0) {
             return result;
         }
+        //TODO add device attributes comparison
         result = compareFields(serviceUUID, that.serviceUUID);
         if (result != 0) {
             return result;
@@ -561,8 +665,7 @@ public class URL implements Comparable<URL> {
     private void validate() {
         if (fieldName != null && characteristicUUID == null
                 || characteristicUUID != null && serviceUUID == null
-                || serviceUUID != null && deviceAddress == null
-                || deviceAddress != null && adapterAddress == null) {
+                || serviceUUID != null && (deviceAddress == null && deviceAttributes.isEmpty())) {
             throw new IllegalArgumentException("Invalid url: " + toString());
         }
     }
