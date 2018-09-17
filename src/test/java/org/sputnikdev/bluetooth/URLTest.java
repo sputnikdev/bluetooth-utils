@@ -45,13 +45,13 @@ public class URLTest {
     @Test
     public void testConstructors() {
         Map<String, String> attr = new HashMap<>();
-        attr.put("name", "Vlad's phone");
-        URL url = new URL("tinyb:/54:60:09:95:86:01/11:22:33:44:55:66[name=Vlad's phone]/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
+        attr.put("name", "Vlad's - phone");
+        URL url = new URL("tinyb:/54:60:09:95:86:01/11:22:33:44:55:66[name=Vlad's - phone]/0000180f-0000-1000-8000-00805f9b34fb/00002a19-0000-1000-8000-00805f9b34fb/Level");
         assertEquals(url, new URL("tinyb", "54:60:09:95:86:01", "11:22:33:44:55:66", attr,
                 "0000180f-0000-1000-8000-00805f9b34fb", "00002a19-0000-1000-8000-00805f9b34fb", "Level"));
         assertEquals(1, url.getDeviceAttributes().size());
         assertTrue(url.getDeviceAttributes().containsKey("name"));
-        assertEquals("Vlad's phone", url.getDeviceAttributes().get("name"));
+        assertEquals("Vlad's - phone", url.getDeviceAttributes().get("name"));
 
         assertEquals("tinyb", new URL("tinyb://").getProtocol());
 

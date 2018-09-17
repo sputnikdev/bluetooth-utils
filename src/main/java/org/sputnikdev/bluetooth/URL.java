@@ -53,7 +53,7 @@ public class URL implements Comparable<URL> {
 
     private static final Pattern URL_PATTERN =
             Pattern.compile("^((?<protocol>\\w*):)?/(?<adapter>(\\w\\w:){5}\\w\\w)?"
-                    + "(/(?<device>(\\w\\w:){5}\\w\\w)?(\\[name=(?<devicename>[\\w\\s']+)\\])?)?"
+                    + "(/(?<device>(\\w\\w:){5}\\w\\w)?(\\[name=(?<devicename>[\\w\\s'-]+)\\])?)?"
                     + "(/(?<service>[0-9A-Fa-f]{4,8}(-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})?))?"
                     + "(/(?<charact>[0-9A-Fa-f]{4,8}(-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})?))?"
                     + "(/(?<field>\\w+))?$");
